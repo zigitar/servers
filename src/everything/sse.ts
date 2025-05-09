@@ -1,10 +1,19 @@
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
 import express from "express";
 import { createServer } from "./everything.js";
+import { addAuthEndpoints, AuthConfig } from "./auth.js";
 
 const app = express();
 
 const { server, cleanup } = createServer();
+
+// Configure auth
+const authConfig: AuthConfig = {
+  enabled: process.env.ENABLE_AUTH === 'true'
+};
+
+// Add auth endpoints if enabled
+addAuthEndpoints(app, authConfig);
 
 let transport: SSEServerTransport;
 
