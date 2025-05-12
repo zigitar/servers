@@ -1,3 +1,5 @@
+import { ProxyOAuthServerProvider } from '@modelcontextprotocol/sdk/server/auth/providers/proxyProvider.js';
+import { mcpAuthRouter } from '@modelcontextprotocol/sdk/server/auth/router.js';
 import express, { Request, Response } from 'express';
 
 export interface AuthConfig {
@@ -22,22 +24,32 @@ export function addAuthEndpoints(app: express.Application, config: AuthConfig): 
     return;
   }
 
-  // OAuth metadata endpoint
-  app.get('/.well-known/oauth-authorization-server', (req: Request, res: Response) => {
-    const baseUrl = `${req.protocol}://${req.get('host')}`;
-    
-    const metadata: WellKnownOAuthMetadata = {
-      issuer: baseUrl,
-      authorization_endpoint: `${baseUrl}/oauth/authorize`,
-      token_endpoint: `${baseUrl}/oauth/token`,
-      jwks_uri: `${baseUrl}/.well-known/jwks.json`,
-      response_types_supported: ['code', 'token', 'id_token', 'code token', 'code id_token', 'token id_token', 'code token id_token'],
-      grant_types_supported: ['authorization_code', 'implicit', 'refresh_token', 'client_credentials'],
-      subject_types_supported: ['public'],
-      id_token_signing_alg_values_supported: ['RS256'],
-      scopes_supported: ['openid', 'profile', 'email']
-    };
+  // TODO: use github(?)
+  const proxyProvider = new ProxyOAuthServerProvider({
+      endpoints: {
+          authorizationUrl: "https://auth.external.com/oauth2/v1/authorize",
+          tokenUrl: "https://auth.external.com/oauth2/v1/token",
+          revocationUrl: "https://auth.external.com/oauth2/v1/revoke",
+      },
+      verifyAccessToken: async (token) => {
+          return {
+              token,
+              clientId: "123",
+              scopes: ["openid", "email", "profile"],
+          }
+      },
+      getClient: async (client_id) => {
+          return {
+              client_id,
+              redirect_uris: ["http://localhost:3000/callback"],
+          }
+      }
+  })
 
-    res.header('Content-Type', 'application/json').send(metadata);
-  });
+  app.use(mcpAuthRouter({
+      provider: proxyProvider,
+      issuerUrl: new URL("https://auth.external.com"),
+      baseUrl: new URL("https://mcp.example.com"),
+      serviceDocumentationUrl: new URL("https://docs.example.com/"),
+  }))
 }
