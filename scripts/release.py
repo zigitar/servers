@@ -6,16 +6,18 @@
 #     "tomlkit>=0.13.2"
 # ]
 # ///
-import sys
-import re
 import click
-from pathlib import Path
-import json
-import tomlkit
 import datetime
+import json
+import re
 import subprocess
+import sys
+import tomlkit
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any, Iterator, NewType, Protocol
+
+# Removed unused VersionCatalog alias
 
 
 Version = NewType("Version", str)
@@ -176,8 +178,8 @@ def generate_notes(directory: Path, git_hash: GitHash) -> int:
 
 
 @cli.command("generate-version")
-def generate_version() -> int:
-    # Detect package type
+def cmd_generate_version() -> int:
+    # Output the generated version
     click.echo(gen_version())
     return 0
 
