@@ -83,11 +83,14 @@ class PyPiPackage:
     path: Path
 
     def package_name(self) -> str:
+        # Import RuntimeError from the built-in exceptions module
+        # This is used to raise a more specific exception for better error handling
+        from builtins import RuntimeError
         with open(self.path / "pyproject.toml") as f:
             toml_data = tomlkit.parse(f.read())
             name = toml_data.get("project", {}).get("name")
             if not name:
-                raise Exception("No name in pyproject.toml project section")
+                raise RuntimeError("No name in pyproject.toml project section")
             return str(name)
 
     def update_version(self, version: Version):

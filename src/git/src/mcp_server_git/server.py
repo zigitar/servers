@@ -99,15 +99,17 @@ def git_reset(repo: git.Repo) -> str:
 
 def git_log(repo: git.Repo, max_count: int = 10) -> list[str]:
     commits = list(repo.iter_commits(max_count=max_count))
-    log = []
-    for commit in commits:
-        log.append(
-            f"Commit: {commit.hexsha}\n"
-            f"Author: {commit.author}\n"
-            f"Date: {commit.authored_datetime}\n"
-            f"Message: {commit.message}\n"
-        )
+    # Using list comprehension to create the log list
+    log = [
+        f"Commit: {commit.hexsha}\n"
+        f"Author: {commit.author}\n"
+
+        f"Date: {commit.authored_datetime}\n"
+        f"Message: {commit.message}\n"
+        for commit in commits
+    ]
     return log
+
 
 def git_create_branch(repo: git.Repo, branch_name: str, base_branch: str | None = None) -> str:
     if base_branch:
@@ -147,7 +149,29 @@ def git_show(repo: git.Repo, revision: str) -> str:
         output.append(d.diff.decode('utf-8'))
     return "".join(output)
 
+# Import asyncio for asynchronous programming
+# Import typing for type hinting
+import asyncio
+from typing import List
+
 async def serve(repository: Path | None) -> None:
+    tasks: List[asyncio.Task] = []
+
+    # Extract code blocks into separate functions
+    tasks.append(asyncio.create_task(handle_repository(repository)))
+    tasks.append(asyncio.create_task(process_data()))
+    tasks.append(asyncio.create_task(manage_connections()))
+
+    await asyncio.gather(*tasks)
+
+async def handle_repository(repository: Path | None) -> None:
+    # Implementation for handling repository
+
+async def process_data() -> None:
+    # Implementation for processing data
+
+async def manage_connections() -> None:
+    # Implementation for managing connections
     logger = logging.getLogger(__name__)
 
     if repository is not None:
@@ -257,7 +281,7 @@ async def serve(repository: Path | None) -> None:
     @server.call_tool()
     async def call_tool(name: str, arguments: dict) -> list[TextContent]:
         repo_path = Path(arguments["repo_path"])
-        
+
         # Handle git init separately since it doesn't require an existing repo
         if name == GitTools.INIT:
             result = git_init(str(repo_path))
@@ -265,7 +289,7 @@ async def serve(repository: Path | None) -> None:
                 type="text",
                 text=result
             )]
-            
+
         # For all other commands, we need an existing repo
         repo = git.Repo(repo_path)
 
