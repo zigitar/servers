@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.0",
+    "@modelcontextprotocol/server-everything": "file:",
     "express": "^4.21.1",
     "zod": "^3.23.8",
     "zod-to-json-schema": "^3.23.5"

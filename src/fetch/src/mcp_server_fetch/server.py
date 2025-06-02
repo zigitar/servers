@@ -45,6 +45,9 @@ def extract_content_from_html(html: str) -> str:
     return content
 
 
+# Import statements
+from urllib.parse import urlparse, urljoin  # Used for parsing URLs and joining paths
+
 def get_robots_txt_url(url: str) -> str:
     """Get the robots.txt URL for a given website URL.
 
@@ -57,10 +60,11 @@ def get_robots_txt_url(url: str) -> str:
     # Parse the URL into components
     parsed = urlparse(url)
 
-    # Reconstruct the base URL with just scheme, netloc, and /robots.txt path
-    robots_url = urlunparse((parsed.scheme, parsed.netloc, "/robots.txt", "", "", ""))
+    # Use urljoin to create the robots.txt URL
+    robots_url = urljoin(url, "/robots.txt")
 
     return robots_url
+
 
 
 async def check_may_autonomously_fetch_url(url: str, user_agent: str, proxy_url: str | None = None) -> None:
